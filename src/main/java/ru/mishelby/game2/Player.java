@@ -3,7 +3,7 @@ package ru.mishelby.game2;
 import lombok.Data;
 
 @Data
-public class Player {
+public class Player implements Playing {
     protected static final int MAX_THROWS = 5;
 
     private String name;
@@ -16,6 +16,7 @@ public class Player {
         this.currentIndex = 0;
     }
 
+    @Override
     public void doThrow(int number) {
         if (currentIndex < MAX_THROWS) {
             playerThrows[currentIndex] = number;
@@ -23,6 +24,7 @@ public class Player {
         }
     }
 
+    @Override
     public int getScore() {
         var sum = 0;
         for (int playerThrow : this.getPlayerThrows()) sum += playerThrow;

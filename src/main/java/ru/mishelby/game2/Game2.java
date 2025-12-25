@@ -1,5 +1,6 @@
 package ru.mishelby.game2;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -9,7 +10,7 @@ import java.util.Scanner;
  * - Регистрации игроков с проверкой уникальности и корректности имён
  * - Выполнения бросков для каждого игрока
  * - Подсчёта очков и определения победителя по правилам игры
- *
+ * <p>
  * Игра предполагает:
  * - Максимум 4 игрока
  * - Каждый игрок делает 5 бросков
@@ -25,7 +26,7 @@ public class Game2 {
     /**
      * Константа максимального значения для броска
      */
-    private static final int MAX_NUMBER = 10;
+    private static final int MAX_NUMBER = 3;
 
     /**
      * Генератор случайных чисел для бросков
@@ -61,69 +62,76 @@ public class Game2 {
 
         for (Player player : PLAYERS) {
             for (var i = 0; i < Player.MAX_THROWS; i++) {
-                player.doThrow(RANDOM.nextInt(MAX_NUMBER));
+                player.doThrow(RANDOM.nextInt(1, MAX_NUMBER));
             }
         }
 
         System.out.println("Players scores: ");
 
         for (Player player : PLAYERS) {
-            System.out.println(player.getName() + ": " + player.getScore());
+            System.out.println(
+                    player.getName() + " " + Arrays.toString(player.getPlayerThrows()) + ": " + player.getScore()
+            );
         }
 
         /**
-         * Здесь сразу указываем имя победителя и его очки
-         * Это нужно для дальнейшего сравнения с другими игроками
-         * Если есть игроки, у которых больше очков, то мы перезаписываем имя победителя и его очки
-         * Если очки равны, то мы сравниваем последний бросок игрока с последним броском другого игрока
+         * Определяет победителя игры по следующим правилам:
+         * 1. Победитель определяется по максимальному количеству очков
+         * 2. Если у нескольких игроков одинаковое количество очков, то:
+         *    - Сравниваются последние броски
+         *    - Побеждает игрок с большим последним броском
+         *    - Если и последние броски равны, то это ничья
+         *
+         * Алгоритм:
+         * 1. Находит игрока с максимальным счетом
+         * 2. Проверяет, есть ли другие игроки с таким же счетом (ничья)
+         * 3. При ничьей сравнивает последние броски всех игроков с максимальным счетом
+         * 4. Выводит имя победителя и его счет
          */
+
+        var maxPlayerIndex = 0;
+        var secondPlayerIndex = 0;
+
         int maxNumber = PLAYERS[0].getScore();
-        String winnerName = PLAYERS[0].getName();
+        var isDraw = false;
 
         System.out.println("\nChoosing the winner...\n");
-        for (int i = 0; i < PLAYERS.length; i++) {
-            System.out.printf("Current player name with max score: %s, current max number%d%n"
-                    .formatted(winnerName, maxNumber));
-            System.out.println();
-            for (int j = i + 1; j < PLAYERS.length; j++) {
-                // Если очки игрока больше, то мы перезаписываем имя победителя и его очки
-                if (maxNumber < PLAYERS[j].getScore()) {
-                    maxNumber = PLAYERS[j].getScore();
-                    winnerName = PLAYERS[j].getName();
-                    System.out.println("|-----------------------------------------------|");
-                    System.out.println("New max number: " + maxNumber + " by " + winnerName);
-                    System.out.println("|-----------------------------------------------|\n");
-                    break;
-                }
 
-                if (maxNumber == PLAYERS[j].getScore() && !winnerName.equals(PLAYERS[j].getName())) {
-                    int lastThrowPlayerI = PLAYERS[i].getPlayerThrows()[MAX_PLAYERS];
-                    int lastThrowPlayerJ = PLAYERS[j].getPlayerThrows()[MAX_PLAYERS];
-
-                    System.out.printf("Equals scores: First player %s, sore: %d || second player %s, score: %d%n"
-                            .formatted(winnerName, maxNumber, PLAYERS[j].getName(), PLAYERS[j].getScore()));
-                    System.out.println("|-----------------------------------------------|\n");
-
-                    if (lastThrowPlayerI > lastThrowPlayerJ) {
-                        System.out.printf("Last throw: First player %s, sore: %d || second player %s, score: %d%n"
-                                .formatted(winnerName, lastThrowPlayerI, PLAYERS[j].getName(), lastThrowPlayerJ));
-
-                        maxNumber = PLAYERS[i].getScore();
-                        winnerName = PLAYERS[i].getName();
-                    } else {
-                        System.out.printf("Last throw: First player %s, sore: %d || second player %s, score: %d%n"
-                                .formatted(winnerName, lastThrowPlayerI, PLAYERS[j].getName(), lastThrowPlayerJ));
-
-                        maxNumber = PLAYERS[j].getScore();
-                        winnerName = PLAYERS[j].getName();
-                    }
-                }
+        for (int i = 1; i < PLAYERS.length; i++) {
+            if (maxNumber < PLAYERS[i].getScore()) {
+                maxNumber = PLAYERS[i].getScore();
+                maxPlayerIndex = i;
             }
         }
 
-        System.out.println("----------------------------------------------------");
-        System.out.println("Winner: " + winnerName + " with score: " + maxNumber);
-        System.out.println("----------------------------------------------------");
+        for (int i = 1; i < PLAYERS.length; i++) {
+            if (maxNumber == PLAYERS[i].getScore() && i != maxPlayerIndex) {
+                isDraw = true;
+                secondPlayerIndex = i;
+                break;
+            }
+        }
+
+        if (isDraw) {
+            System.out.println("It's a draw! Comparing last throws...");
+            int lastPlayerThrowOne = PLAYERS[maxPlayerIndex].getPlayerThrows()[Player.MAX_THROWS - 1];
+            int lastPlayerThrowTwo = PLAYERS[secondPlayerIndex].getPlayerThrows()[Player.MAX_THROWS - 1];
+            System.out.println("Last throws: " + lastPlayerThrowOne + " " + lastPlayerThrowTwo);
+
+            if (lastPlayerThrowOne == lastPlayerThrowTwo) {
+                System.out.println("It's a draw!");
+            } else if (lastPlayerThrowOne > lastPlayerThrowTwo) {
+                System.out.println("----------------------------------------------------");
+                System.out.println("Winner: " + PLAYERS[maxPlayerIndex].getName() +
+                        " with score: " + PLAYERS[maxPlayerIndex].getScore());
+                System.out.println("----------------------------------------------------");
+            } else {
+                System.out.println("----------------------------------------------------");
+                System.out.println("Winner: " + PLAYERS[secondPlayerIndex].getName() +
+                        " with score: " + PLAYERS[secondPlayerIndex].getScore());
+                System.out.println("----------------------------------------------------");
+            }
+        }
     }
 
     /**
@@ -153,7 +161,7 @@ public class Game2 {
      * Запрашивает ввод имени до тех пор, пока не будет введено корректное имя.
      *
      * @param playerNumber номер игрока (1-4)
-     * @param scanner объект Scanner для чтения ввода с консоли
+     * @param scanner      объект Scanner для чтения ввода с консоли
      * @return корректное имя игрока
      */
     private static String isValidName(int playerNumber, Scanner scanner) {
