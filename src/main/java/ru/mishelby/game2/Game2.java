@@ -131,7 +131,13 @@ public class Game2 {
                         " with score: " + PLAYERS[secondPlayerIndex].getScore());
                 System.out.println("----------------------------------------------------");
             }
+        }else{
+            System.out.println("----------------------------------------------------");
+            System.out.println("Winner: " + PLAYERS[maxPlayerIndex].getName() +
+                    " with score: " + PLAYERS[maxPlayerIndex].getScore());
+            System.out.println("----------------------------------------------------");
         }
+
     }
 
     /**
