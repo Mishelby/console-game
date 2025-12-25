@@ -89,55 +89,65 @@ public class Game2 {
          * 4. Выводит имя победителя и его счет
          */
 
-        var maxPlayerIndex = 0;
-        var secondPlayerIndex = 0;
+        int maxScore = Integer.MIN_VALUE;
+        int maxScoreCount = 0;
+        int[] maxScorePlayers = new int[MAX_PLAYERS];
 
-        int maxNumber = PLAYERS[0].getScore();
-        var isDraw = false;
+// 1. Находим максимальный счет и игроков с ним
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            if (PLAYERS[i] != null) {
+                int score = PLAYERS[i].getScore();
 
-        System.out.println("\nChoosing the winner...\n");
-
-        for (int i = 1; i < PLAYERS.length; i++) {
-            if (maxNumber < PLAYERS[i].getScore()) {
-                maxNumber = PLAYERS[i].getScore();
-                maxPlayerIndex = i;
+                if (score > maxScore) {
+                    maxScore = score;
+                    maxScoreCount = 0;
+                    maxScorePlayers[maxScoreCount++] = i;
+                } else if (score == maxScore) {
+                    maxScorePlayers[maxScoreCount++] = i;
+                }
             }
         }
 
-        for (int i = 1; i < PLAYERS.length; i++) {
-            if (maxNumber == PLAYERS[i].getScore() && i != maxPlayerIndex) {
-                isDraw = true;
-                secondPlayerIndex = i;
-                break;
-            }
-        }
-
-        if (isDraw) {
+// 2. Если победитель один
+        if (maxScoreCount == 1) {
+            int winner = maxScorePlayers[0];
+            System.out.println("----------------------------------------------------");
+            System.out.println("Winner: " + PLAYERS[winner].getName() +
+                    " with score: " + PLAYERS[winner].getScore());
+            System.out.println("----------------------------------------------------");
+        } else {
+            // 3. Сравнение последних бросков
             System.out.println("It's a draw! Comparing last throws...");
-            int lastPlayerThrowOne = PLAYERS[maxPlayerIndex].getPlayerThrows()[Player.MAX_THROWS - 1];
-            int lastPlayerThrowTwo = PLAYERS[secondPlayerIndex].getPlayerThrows()[Player.MAX_THROWS - 1];
-            System.out.println("Last throws: " + lastPlayerThrowOne + " " + lastPlayerThrowTwo);
 
-            if (lastPlayerThrowOne == lastPlayerThrowTwo) {
-                System.out.println("It's a draw!");
-            } else if (lastPlayerThrowOne > lastPlayerThrowTwo) {
+            int bestLastThrow = Integer.MIN_VALUE;
+            int bestPlayerIndex = -1;
+            boolean draw = false;
+
+            for (int i = 0; i < maxScoreCount; i++) {
+                int index = maxScorePlayers[i];
+                int lastThrow = PLAYERS[index].getLastThrow();
+
+                if (lastThrow > bestLastThrow) {
+                    bestLastThrow = lastThrow;
+                    bestPlayerIndex = index;
+                    draw = false;
+                } else if (lastThrow == bestLastThrow) {
+                    draw = true;
+                }
+            }
+
+            if (draw) {
                 System.out.println("----------------------------------------------------");
-                System.out.println("Winner: " + PLAYERS[maxPlayerIndex].getName() +
-                        " with score: " + PLAYERS[maxPlayerIndex].getScore());
+                System.out.println("It's a draw! All last throws are equal.");
                 System.out.println("----------------------------------------------------");
             } else {
                 System.out.println("----------------------------------------------------");
-                System.out.println("Winner: " + PLAYERS[secondPlayerIndex].getName() +
-                        " with score: " + PLAYERS[secondPlayerIndex].getScore());
+                System.out.println("Winner: " + PLAYERS[bestPlayerIndex].getName() +
+                        " with score: " + PLAYERS[bestPlayerIndex].getScore() +
+                        " and last throw: " + bestLastThrow);
                 System.out.println("----------------------------------------------------");
             }
-        }else{
-            System.out.println("----------------------------------------------------");
-            System.out.println("Winner: " + PLAYERS[maxPlayerIndex].getName() +
-                    " with score: " + PLAYERS[maxPlayerIndex].getScore());
-            System.out.println("----------------------------------------------------");
         }
-
     }
 
     /**

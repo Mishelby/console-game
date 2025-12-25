@@ -34,4 +34,8 @@ public class Player implements Playing {
     public void incrementIndex() {
         currentIndex++;
     }
+
+    public int getLastThrow() {
+        return playerThrows[playerThrows.length - 1];
+    }
 }
